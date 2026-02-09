@@ -15,7 +15,20 @@ initializeFieldConfiguration();
 console.error('Starting DataForSEO MCP Server...');
 console.error(`Server name: ${name}, version: ${version}`);
 
-const server = initMcpServer(process.env.DATAFORSEO_USERNAME, process.env.DATAFORSEO_PASSWORD);
+// Support both DATAFORSEO_TOKEN (base64) and separate USERNAME/PASSWORD
+let username = process.env.DATAFORSEO_USERNAME;
+let password = process.env.DATAFORSEO_PASSWORD;
+
+if (!username && !password && process.env.DATAFORSEO_TOKEN) {
+  const decoded = atob(process.env.DATAFORSEO_TOKEN);
+  const colonIndex = decoded.indexOf(':');
+  if (colonIndex !== -1) {
+    username = decoded.substring(0, colonIndex);
+    password = decoded.substring(colonIndex + 1);
+  }
+}
+
+const server = initMcpServer(username, password);
 
 // Start the server
 async function main() {
